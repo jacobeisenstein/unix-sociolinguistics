@@ -20,8 +20,10 @@ object per line.
 If we combine ```zcat``` (```cat``` for zipfiles) with ```head```, 
 we can examine the first line of one such file:
 
-```[jeisenstein3@conair new-archive]$ zcat tweets-Feb-14-16-03-35.gz | head -1
-","id":58371299,"id_str":"58371299","indices":[3,17]}],"symbols":[],"media":[{"id":696796012514406400,"id_str":"696796012514406400","indices":[36,59],"media_url":"http:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","media_url_https":"https:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","url":"https:\/\/t.co\/GhVa5HQ5ok","display_url":"pic.twitter.com\/GhVa5HQ5ok","expanded_url":"http:\/\/twitter.com\/TheybelikeDar\/status\/696796019800014848\/photo\/1","type":"photo","sizes":{"small":{"w":340,"h":628,"resize":"fit"},"large":{"w":554,"h":1024,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"medium":{"w":554,"h":1024,"resize":"fit"}},"source_status_id":696796019800014848,"source_status_id_str":"696796019800014848","source_user_id":58371299,"source_user_id_str":"58371299"}]},"extended_entities":{"media":[{"id":696796012514406400,"id_str":"696796012514406400","indices":[36,59],"media_url":"http:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","media_url_https":"https:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","url":"https:\/\/t.co\/GhVa5HQ5ok","display_url":"pic.twitter.com\/GhVa5HQ5ok","expanded_url":"http:\/\/twitter.com\/TheybelikeDar\/status\/696796019800014848\/photo\/1","type":"photo","sizes":{"small":{"w":340,"h":628,"resize":"fit"},"large":{"w":554,"h":1024,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"medium":{"w":554,"h":1024,"resize":"fit"}},"source_status_id":696796019800014848,"source_status_id_str":"696796019800014848","source_user_id":58371299,"source_user_id_str":"58371299"}]},"favorited":false,"retweeted":false,"possibly_sensitive":false,"filter_level":"low","lang":"en","timestamp_ms":"1455353581659"}```
+```shell
+[jeisenstein3@conair new-archive]$ zcat tweets-Feb-14-16-03-35.gz | head -1
+","id":58371299,"id_str":"58371299","indices":[3,17]}],"symbols":[],"media":[{"id":696796012514406400,"id_str":"696796012514406400","indices":[36,59],"media_url":"http:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","media_url_https":"https:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","url":"https:\/\/t.co\/GhVa5HQ5ok","display_url":"pic.twitter.com\/GhVa5HQ5ok","expanded_url":"http:\/\/twitter.com\/TheybelikeDar\/status\/696796019800014848\/photo\/1","type":"photo","sizes":{"small":{"w":340,"h":628,"resize":"fit"},"large":{"w":554,"h":1024,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"medium":{"w":554,"h":1024,"resize":"fit"}},"source_status_id":696796019800014848,"source_status_id_str":"696796019800014848","source_user_id":58371299,"source_user_id_str":"58371299"}]},"extended_entities":{"media":[{"id":696796012514406400,"id_str":"696796012514406400","indices":[36,59],"media_url":"http:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","media_url_https":"https:\/\/pbs.twimg.com\/media\/CauESBbUcAAyeu-.jpg","url":"https:\/\/t.co\/GhVa5HQ5ok","display_url":"pic.twitter.com\/GhVa5HQ5ok","expanded_url":"http:\/\/twitter.com\/TheybelikeDar\/status\/696796019800014848\/photo\/1","type":"photo","sizes":{"small":{"w":340,"h":628,"resize":"fit"},"large":{"w":554,"h":1024,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"medium":{"w":554,"h":1024,"resize":"fit"}},"source_status_id":696796019800014848,"source_status_id_str":"696796019800014848","source_user_id":58371299,"source_user_id_str":"58371299"}]},"favorited":false,"retweeted":false,"possibly_sensitive":false,"filter_level":"low","lang":"en","timestamp_ms":"1455353581659"}
+```
 
 This is a simple pipeline, which pipes the output of ```zcat``` through the command ```head -1```. (Check out the comment from @WladimirSidorenko on the dangers of using pipes.) Anyway, the structure of the JSON file is:
 
@@ -33,7 +35,9 @@ However, the values can themselves contain nested JSON objects. Anyway, we want 
 
 The easy way to do this is using a json parser, like [jq](https://stedolan.github.io/jq). The following command will pull out the text field from the first three json lines that contain the substring "going to be".
 
-```zgrep 'going to be' tweets-Feb-14-16-03-35.gz  | head -3 | jq .text```
+```shell
+zgrep 'going to be' tweets-Feb-14-16-03-35.gz  | head -3 | jq .text
+```
 
 The result is:
 
@@ -43,7 +47,9 @@ The result is:
 
 To get the text and the username, you can do this:
 
-```zgrep 'going to be' tweets-Feb-14-16-03-35.gz | head -3 | jq --raw-output '"\(.user.name)\t\(.text)"'```
+```shell
+zgrep 'going to be' tweets-Feb-14-16-03-35.gz | head -3 | jq --raw-output '"\(.user.name)\t\(.text)"'
+```
 
 - ```machen afc	@StJuliansFC @CwmbranTown hope our games on going to be a nightmare catching up on all these games!```
 - ```nicola	im going to be by myself though im scared```
