@@ -63,7 +63,9 @@ If you don't have ```jq```, or you want to learn to use more general tools, you 
 
 We're going to use Sed's "s" command. The syntax is this command is essentially:
 
-```sed s/find/replace/options```,
+```shell
+sed s/find/replace/options
+```
 
 where ```find``` specifies a pattern to match and ```replace``` specifies what to replace that pattern with. We'll always use a single option, ```/g``` which says to execute this replacement "globally" -- every time possible in each line.
 
@@ -71,7 +73,9 @@ where ```find``` specifies a pattern to match and ```replace``` specifies what t
 
 As a first step, let's try to break up these big JSON blocks into one key-value pair per line.
 
-```zcat tweets-Feb-14-16-03-35.gz | sed 's/,\"/\n/g' | head -n 5```
+```shell
+zcat tweets-Feb-14-16-03-35.gz | sed 's/,\"/\n/g' | head -n 5
+```
 
 Results:
 
@@ -87,7 +91,9 @@ Note that this command does not respect JSON's nested structure. For our purpose
 
 Next, to get the relevant text, we can use a *capture group*. We want to capture the field after the "text" key. Here's how we'll do it:
 
-```sed s/.*\"text\":\"\([^\"]*\)\".*/\1/g"```
+```shell
+sed s/.*\"text\":\"\([^\"]*\)\".*/\1/g
+```
 
 This says:
 
@@ -99,7 +105,9 @@ This says:
 
 We call:
 
-```zcat tweets-Feb-14-16-03-35.gz | sed 's/.*\"text\":\"\([^\"]*\)\".*/\1/g' | grep -E '^[A-Za-z]' | head -3```,
+```shell
+zcat tweets-Feb-14-16-03-35.gz | sed 's/.*\"text\":\"\([^\"]*\)\".*/\1/g' | grep -E '^[A-Za-z]' | head -3
+```
 
 which uses grep to filter the output to make sure it starts with an alphabetic character. Here are the first three results:
 
@@ -109,7 +117,9 @@ which uses grep to filter the output to make sure it starts with an alphabetic c
 
 Now let's use a more complicated capture pattern to get the name too. For the name, we will require that it be two, capitalized alphabetic strings, ```[A-Z][a-z]* [A-Z][a-z]*```. This is a trick to trade recall for precision, since there are a lot of garbage names in Twitter. Here's what we run:
 
-```zcat tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | head -3```
+```shell
+zcat tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | head -3
+```
 
 Notice that the replace string now is ```\1\t\2```: print the two capture groups, with a tab between them. Here's the output:
 
@@ -121,13 +131,15 @@ Notice that the replace string now is ```\1\t\2```: print the two capture groups
 
 We're wasting time processing a lot of text strings that are not of interest. So let's put a grep at the front of the pipeline, so that we start with that:
 
-```zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | head -3```
+```shell
+zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | head -3
+```
 
 Here are the results:
 
-```- MGBACKTOWEMBLEY	Matt Goss
-- God Brat 1, can spew contempt. World champion at ten. He's going to be a fun teenager.	Craig Short
-- I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter```
+- ```MGBACKTOWEMBLEY	Matt Goss```
+- ```God Brat 1, can spew contempt. World champion at ten. He's going to be a fun teenager.	Craig Short```
+- ```I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter```
 
 Notice that the first example doesn't include "going to be" in the text! The string must appear somewhere else in the JSON, maybe in the profile.
 
@@ -135,7 +147,9 @@ Notice that the first example doesn't include "going to be" in the text! The str
 
 The solution is to use grep twice: once as a prefiltering step, and once as a postfiltering step. I find that this is a typical design pattern in streaming from big data: use a fast low-precision filter first, then a slower high-precision filter at the end.
 
-```zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'going to be ' | head -5```
+```shell
+zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'going to be ' | head -5
+```
 
 Here are the results:
 
@@ -151,7 +165,9 @@ This time I took the first five hits, because the toaster tweet got repeated thr
 
 We only want the names of the individuals using these words. We can collect these using ```cut.```
 
-```zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'going to be ' | head -5 | cut -f 2```
+```shell
+zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'going to be ' | head -5 | cut -f 2
+```
 
 Results:
 
@@ -163,8 +179,12 @@ Results:
 
 Let's write these to a file, one for a each pattern:
 
-```zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'going to be ' | cut -f 2 | tee ~/going-to-be-all-names.txt```
-```zgrep 'will be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'will be ' | cut -f 2 | tee ~/will-be-all-names.txt```
+```shell
+zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'going to be ' | cut -f 2 | tee ~/going-to-be-all-names.txt
+```
+```shell
+zgrep 'will be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\([A-Z][a-z]* [A-Z][a-z]*\)\".*/\1\t\2/g' | grep -E '^[A-Za-z].*' | grep 'will be ' | cut -f 2 | tee ~/will-be-all-names.txt
+```
 
 Instead of the usual ```>``` redirect, I've used ```tee```, which will print to standard out, as well as write to the file.
 
@@ -172,7 +192,9 @@ Instead of the usual ```>``` redirect, I've used ```tee```, which will print to 
 
 One thing we notice is that one guy, "Cameron Dallas", seems to account for a lot of these messages. Let's just count each name once.
 
-```sort -u ~/will-be-all-names.txt | cut -f 1 -d\  | uniq -c | tee will-be-name-counts.txt```
+```shell
+sort -u ~/will-be-all-names.txt | cut -f 1 -d\  | uniq -c | tee will-be-name-counts.txt
+```
 
 Here's what's happening in this pipeline:
 
@@ -184,7 +206,9 @@ Here's what's happening in this pipeline:
 
 Let's get the top names for each set:
 
-```sort -nr ~/will-be-name-counts.txt  | head -5```
+```shell
+sort -nr ~/will-be-name-counts.txt  | head -5
+```
 
 Results:
 
@@ -194,7 +218,9 @@ Results:
 - ```      8 Chris```
 - ```      7 Mark```
 
-```sort -nr ~/going-to-be-name-counts.txt | head -5```
+```shell 
+sort -nr ~/going-to-be-name-counts.txt | head -5
+```
 
 Results:
 
@@ -208,13 +234,17 @@ Whose are older? Some answers are online: [http://rhiever.github.io/name-age-cal
 
 ## Pulling web data
 
-We can also pull data directly from this site:
+We can also pull data directly from this site, using the helpful ```curl``` command:
 
-```curl http://rhiever.github.io/name-age-calculator/names/M/N/Nathan.txt```
+```shell
+curl http://rhiever.github.io/name-age-calculator/names/M/N/Nathan.txt
+```
 
 This data is field-delimited by a comma. We will use ```awk``` to reorganize it so that the column containing the counts of living people is first. Then we will sort on this column, to find the year in which the greatest number of living people was born with name:
 
-```curl http://rhiever.github.io/name-age-calculator/names/M/N/Nathan.txt | awk -F, '{ print $3"\t" $1 }' | sort -n | cut -f 2 | tail -n 1```
+```shell
+curl http://rhiever.github.io/name-age-calculator/names/M/N/Nathan.txt | awk -F, '{ print $3"\t" $1 }' | sort -n | cut -f 2 | tail -n 1
+```
 
 Results: ```2004```
 
@@ -227,15 +257,29 @@ The ```awk``` command ```awk -F, '{ print $3"\t"$1 }'``` says:
 
 We want to get this data for all names. Let's see how we can iterate over the lines in a file. We'll use the ```for``` command, and then use $(command) to indicate a variable whose values are defined by the output of a sequence of other unix commands:
 
-```for name in $(sort -nr ~/will-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g');  do echo $name; done```
+```shell
+for name in $(sort -nr ~/will-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g');  do echo $name; done
+```
 
 Next, we'll take these names, and dynamically construct appropriate URLs to pull their age statistics from the from the website. Then we'll run our awk postprocessing script to get the ages.
 
-```for name in $(sort -nr ~/will-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g');  do echo $name; curl -s http://rhiever.github.io/name-age-calculator/names/M/${name:0:1}/$name.txt | awk -F, '{ print $3"\t"$1 }' | sort -n | cut -f 2 | tail -1; done```
+```shell
+for name in $(sort -nr ~/will-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g'); do 
+ echo $name; 
+ curl -s http://rhiever.github.io/name-age-calculator/names/M/${name:0:1}/$name.txt | awk -F, '{ print $3"\t"$1 }' | sort -n | cut -f 2 | tail -1; 
+done
+```
 
 Note that the URLs require us to specify male or female. The above command line only gets male results. Let's add another ```for``` loop to iterate over genders. (@WladimirSidorenko notes that the iteration style ```for gender in {'M','F'}``` was only supported since Bash 4.0, so you may prefer the "old school" alternative ```for gender in M F```.)
 
-```for name in $(sort -nr ~/will-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g'); do echo $name; for gender in {'M','F'}; do curl -s http://rhiever.github.io/name-age-calculator/names/$gender/${name:0:1}/$name.txt | awk -F, '{ print $3"\t"$1 }' | sort -n | cut -f 2 | tail -1; done; done```
+```shell
+for name in $(sort -nr ~/will-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g'); do 
+ echo $name; 
+ for gender in {'M','F'}; do 
+  curl -s http://rhiever.github.io/name-age-calculator/names/$gender/${name:0:1}/$name.txt | awk -F, '{ print $3"\t"$1 }' | sort -n | cut -f 2 | tail -1; 
+ done; 
+done
+```
 
 Surprisingly enough, most of these names have significant counts for both girls and boys. But here are the final results:
 
@@ -257,7 +301,13 @@ Surprisingly enough, most of these names have significant counts for both girls 
 
 We get an error for the non-name "The", which returns an HTML string. For the names that work, most of them are for people born in the 1960s. Now for "going to be":
 
-```for name in $(sort -nr ~/going-to-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g'); do echo $name; for gender in {'M','F'}; do curl -s http://rhiever.github.io/name-age-calculator/names/$gender/${name:0:1}/$name.txt | awk -F, '{ print $3"\t"$1 }' | sort -n | cut -f 2 | tail -1; done; done```
+```shell
+for name in $(sort -nr ~/going-to-be-name-counts.txt | head -5 | sed 's/\([^[:alpha:]]*\)//g'); do 
+ echo $name; 
+ for gender in {'M','F'}; do 
+  curl -s http://rhiever.github.io/name-age-calculator/names/$gender/${name:0:1}/$name.txt | awk -F, '{ print $3"\t"$1 }' | sort -n | cut -f 2 | tail -1;
+ done;
+done```
 
 - Taylor
 - 1992
