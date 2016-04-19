@@ -64,9 +64,7 @@ The format of the ```jq``` command is a little funny: I don't know why you have 
 
 # Getting the text with Sed and Grep
 
-If you don't have ```jq```, or you want to learn to use more general tools, you can use Sed (**s**treaming **ed**itor) to capture each of these fields. (Note that there are command-line JSON parsers, but we're going to stick with the good old linux shell for this tutorial.)
-
-We're going to use Sed's "s" command. The syntax is this command is essentially:
+If you don't have ```jq```, or you want to learn to use more general tools, you can use Sed (**s**treaming **ed**itor) to capture each of these fields. We're going to use Sed's "s" command. The syntax is this command is essentially:
 
 ```shell
 sed s/find/replace/options
