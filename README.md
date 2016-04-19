@@ -12,6 +12,7 @@ According to the sociolinguistic method of *apparent time*, we expect to find th
 We will use classic shell tools ```grep, sed, awk, cut, sort```, etc. 
 I am not a shell expert, and there are likely better ways to do many of these things. 
 You can get lots of opinions about these topics on stackexchange and stackoverflow, among other places.
+(Thanks to @WladimirSidorenko for several helpful comments on improving the examples and presentation!)
 
 # Looking at the data
 
