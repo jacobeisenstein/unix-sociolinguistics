@@ -41,19 +41,23 @@ zgrep 'going to be' tweets-Feb-14-16-03-35.gz  | head -3 | jq .text
 
 The result is:
 
-- ```"@StJuliansFC @CwmbranTown hope our games on going to be a nightmare catching up on all these games!"```
-- ```"im going to be by myself though im scared"```
-- ```"RT @carterreynolds: Magcon may never be the same but we're ALWAYS going to be one big happy family 😊"```
+```
+"@StJuliansFC @CwmbranTown hope our games on going to be a nightmare catching up on all these games!"
+"im going to be by myself though im scared"
+"RT @carterreynolds: Magcon may never be the same but we're ALWAYS going to be one big happy family 😊"
+```
 
 To get the text and the username, you can do this:
 
 ```shell
 zgrep 'going to be' tweets-Feb-14-16-03-35.gz | head -3 | jq --raw-output '"\(.user.name)\t\(.text)"'
 ```
+Results:
 
-- ```machen afc	@StJuliansFC @CwmbranTown hope our games on going to be a nightmare catching up on all these games!```
-- ```nicola	im going to be by myself though im scared```
-- ```Love yoυ Cαм	RT @carterreynolds: Magcon may never be the same but we're ALWAYS going to be one big happy family 😊```
+```
+machen afc	@StJuliansFC @CwmbranTown hope our games on going to be a nightmare catching up on all these games!nicola	im going to be by myself though im scared
+Love yoυ Cαм	RT @carterreynolds: Magcon may never be the same but we're ALWAYS going to be one big happy family 😊
+```
 
 The format of the ```jq``` command is a little funny: I don't know why you have to escape the opening parentheses, but not the closing ones.
 
@@ -79,11 +83,13 @@ zcat tweets-Feb-14-16-03-35.gz | sed 's/,\"/\n/g' | head -n 5
 
 Results:
 
-- ```"```
-- ```id":58371299```
-- ```id_str":"58371299"```
-- ```indices":[3,17]}]```
-- ```symbols":[]```
+```
+"
+id":58371299
+id_str":"58371299"
+indices":[3,17]}]
+symbols":[]
+```
 
 Note that this command does not respect JSON's nested structure. For our purposes, that won't matter, but if there were nested "text" fields, we might be in trouble.
 
@@ -109,11 +115,13 @@ We call:
 zcat tweets-Feb-14-16-03-35.gz | sed 's/.*\"text\":\"\([^\"]*\)\".*/\1/g' | grep -E '^[A-Za-z]' | head -3
 ```
 
-which uses grep to filter the output to make sure it starts with an alphabetic character. Here are the first three results:
+which uses ```grep``` to filter the output to make sure it starts with an alphabetic character. Here are the first three results:
 
-- ```https:\/\/t.co\/QuRvL8exJZ```
-- ```Que alguien me duerma de una \ud83d\udc4a, \ud83d\ude4f.```
-- ```relationship status: https:\/\/t.co\/eON4iSSjvz```
+```
+https:\/\/t.co\/QuRvL8exJZ
+Que alguien me duerma de una \ud83d\udc4a, \ud83d\ude4f.
+relationship status: https:\/\/t.co\/eON4iSSjvz
+```
 
 Now let's use a more complicated capture pattern to get the name too. For the name, we will require that it be two, capitalized alphabetic strings, ```[A-Z][a-z]* [A-Z][a-z]*```. This is a trick to trade recall for precision, since there are a lot of garbage names in Twitter. Here's what we run:
 
@@ -123,9 +131,11 @@ zcat tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)\",.*name\":\"\(
 
 Notice that the replace string now is ```\1\t\2```: print the two capture groups, with a tab between them. Here's the output:
 
-- ```https:\/\/t.co\/QuRvL8exJZ	Selena Gomez```
-- ```Gusto ko ng katext	Roymar Buenvenida```
-- ```RT @NikitaLovebird: \u0915\u0947\u091c\u0930\u0940\u0935\u093e\u0932~ \u0926\u093e\u0926\u0930\u0940 \u091a\u0932\u094b\u0917\u0947 \n\u0911\u091f\u094b\u0935\u093e\u0932\u093e~ \u0939\u093e \u0939\u093e \u0939\u093e \u0939\u093e \n.\n.\n\u0915\u0947\u091c\u0930\u0940\u0935\u093e\u0932~ JNU \u091a\u0932\u094b\u0917\u0947 \n\u0911\u091f\u094b\u0935\u093e\u0932\u093e~ \u0928\u0939\u0940\u0902\n\u0907\u0938\u092e\u0947 \u0915\u0947\u091c\u0930\u0940 \u0905\u0902\u0915\u0932 \u0915\u094d\u092f\u093e \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948???\n\u2026	Sahil Kataria```
+```
+https:\/\/t.co\/QuRvL8exJZ	Selena Gomez
+Gusto ko ng katext	Roymar Buenvenida
+RT @NikitaLovebird: \u0915\u0947\u091c\u0930\u0940\u0935\u093e\u0932~ \u0926\u093e\u0926\u0930\u0940 \u091a\u0932\u094b\u0917\u0947 \n\u0911\u091f\u094b\u0935\u093e\u0932\u093e~ \u0939\u093e \u0939\u093e \u0939\u093e \u0939\u093e \n.\n.\n\u0915\u0947\u091c\u0930\u0940\u0935\u093e\u0932~ JNU \u091a\u0932\u094b\u0917\u0947 \n\u0911\u091f\u094b\u0935\u093e\u0932\u093e~ \u0928\u0939\u0940\u0902\n\u0907\u0938\u092e\u0947 \u0915\u0947\u091c\u0930\u0940 \u0905\u0902\u0915\u0932 \u0915\u094d\u092f\u093e \u0915\u0930 \u0938\u0915\u0924\u0947 \u0939\u0948???\n\u2026	Sahil Kataria
+```
 
 ## Putting zgrep in front
 
@@ -137,9 +147,11 @@ zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)
 
 Here are the results:
 
-- ```MGBACKTOWEMBLEY	Matt Goss```
-- ```God Brat 1, can spew contempt. World champion at ten. He's going to be a fun teenager.	Craig Short```
-- ```I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter```
+```
+MGBACKTOWEMBLEY	Matt Goss
+God Brat 1, can spew contempt. World champion at ten. He's going to be a fun teenager.	Craig Short
+I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter
+```
 
 Notice that the first example doesn't include "going to be" in the text! The string must appear somewhere else in the JSON, maybe in the profile.
 
@@ -153,11 +165,13 @@ zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)
 
 Here are the results:
 
-- ```God Brat 1, can spew contempt. World champion at ten. He's going to be a fun teenager.	Craig Short```
-- ```I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter```
-- ```I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter```
-- ```I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter```
-- ```I'm going to be on Broadcasting House on Radio 4 tomorrow explaining why I actually quite enjoy Valentine's Day *ducks*	Henry Jeffreys```
+```
+God Brat 1, can spew contempt. World champion at ten. He's going to be a fun teenager.	Craig Short
+I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter
+I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter
+I've got a new toaster. I've a feeling finding an optimum setting is going to be quite the journey. What a time to be alive.	Boring Tweeter
+I'm going to be on Broadcasting House on Radio 4 tomorrow explaining why I actually quite enjoy Valentine's Day *ducks*	Henry Jeffreys
+```
 
 This time I took the first five hits, because the toaster tweet got repeated three times for some reason. We'll deal with that later.
 
@@ -171,11 +185,13 @@ zgrep 'going to be ' tweets-Feb-14-16-03-35.gz  | sed 's/.*\"text\":\"\([^\"]*\)
 
 Results:
 
-- ```Craig Short```
-- ```Boring Tweeter```
-- ```Boring Tweeter```
-- ```Boring Tweeter```
-- ```Henry Jeffreys```
+```
+Craig Short
+Boring Tweeter
+Boring Tweeter
+Boring Tweeter
+Henry Jeffreys
+```
 
 Let's write these to a file, one for a each pattern:
 
@@ -212,11 +228,13 @@ sort -nr ~/will-be-name-counts.txt  | head -5
 
 Results:
 
-- ```     10 The```
-- ```     10 David```
-- ```      8 Michael```
-- ```      8 Chris```
-- ```      7 Mark```
+```
+10 The
+10 David
+8 Michael
+8 Chris
+7 Mark
+```
 
 ```shell 
 sort -nr ~/going-to-be-name-counts.txt | head -5
@@ -224,11 +242,13 @@ sort -nr ~/going-to-be-name-counts.txt | head -5
 
 Results:
 
-- ```      3 Taylor```
-- ```      3 Nathan```
-- ```      3 Josh```
-- ```      3 Jon```
-- ```      3 Hannah```
+```      
+3 Taylor
+3 Nathan
+3 Josh
+3 Jon
+3 Hannah
+```
 
 Whose are older? Some answers are online: [http://rhiever.github.io/name-age-calculator/index.html?Gender=M&Name=Nathan](http://rhiever.github.io/name-age-calculator/index.html?Gender=M&Name=Nathan)
 
@@ -283,21 +303,23 @@ done
 
 Surprisingly enough, most of these names have significant counts for both girls and boys. But here are the final results:
 
-- The
--      ul { list-style: none; margin: 25px 0; padding: 0; }
--      ul { list-style: none; margin: 25px 0; padding: 0; }
-- David
-- 1960
-- 1983
-- Michael
-- 1970
-- 1986
-- Chris
-- 1961
-- 1961
-- Mark
-- 1960
-- 1968
+```
+The
+     ul { list-style: none; margin: 25px 0; padding: 0; }
+     ul { list-style: none; margin: 25px 0; padding: 0; }
+David
+1960
+1983
+Michael
+1970
+1986
+Chris
+1961
+1961
+Mark
+1960
+1968
+```
 
 We get an error for the non-name "The", which returns an HTML string. For the names that work, most of them are for people born in the 1960s. Now for "going to be":
 
@@ -307,23 +329,26 @@ for name in $(sort -nr ~/going-to-be-name-counts.txt | head -5 | sed 's/\([^[:al
  for gender in {'M','F'}; do 
   curl -s http://rhiever.github.io/name-age-calculator/names/$gender/${name:0:1}/$name.txt | awk -F, '{ print $3"\t"$1 }' | sort -n | cut -f 2 | tail -1;
  done;
-done```
+done
+```
 
-- Taylor
-- 1992
-- 1993
-- Nathan
-- 2004
-- 1985
-- Josh
-- 1979
-- ul { list-style: none; margin: 25px 0; padding: 0; }
-- Jon
-- 1964
-- 1958
-- Hannah
-- 2004
-- 2000
+```
+Taylor
+1992
+1993
+Nathan
+2004
+1985
+Josh
+1979
+ul { list-style: none; margin: 25px 0; padding: 0; }
+Jon
+1964
+1958
+Hannah
+2004
+2000
+```
 
 Taylor, Nathan, and Hannah all peaked after 1990; Josh peaked in the late 1970s, and only Jon dates back to the 1960s.
 
