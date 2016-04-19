@@ -357,8 +357,6 @@ This data, limited though it is, supports the hypothesis: "going to be" is favor
 
 # Next steps
 
-This analysis is limited and flawed in many ways. 
-To make it more robust, I might *first* extract all relevant tweets, which are those that contain either "will be" or "going to be". 
-Then I could work with this smaller dataset, which will be faster to analyze. 
-For each author, we could try to impute an age by the name, and then use logistic regression to see how much of the variance is explained by author age. 
-I'd want to do that in Python statsmodels or R. To get there, I would likely use shell or python to write out CSV files which could easily be read into dataframes.
+Now that you know *how* to do variationist sociolinguistic analysis in the Unix shell, you may wonder whether one *should* do this.
+
+It will hopefully be obvious that the analysis presented here is not robust enough to include a research paper. A classical variationist sociolinguistic approach would be to treat the future form as a linguistic variable, and run a logistic regression to estimate the impact of age on the form of this variable. Even better would be a mixed effects model, to control for author-level idiosyncrasies. I won't say this is impossible in the Unix shell, but at the very least, it is the type of thing that one only does when one is trying hard to make some kind of point. A more realistic path forward would be to use the Unix shell to select a relevant set of data, and then write the output to CSV files that could easily be opened as data frames in R or Python.
