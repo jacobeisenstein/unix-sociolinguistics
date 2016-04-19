@@ -102,7 +102,7 @@ sed s/.*\"text\":\"\([^\"]*\)\".*/\1/g
 
 This says:
 
-- match all characters before observing the string ```"text":\"``` (note the escaped quotation marks).
+- match all characters before observing the string ```"text":"``` (note the escaped quotation marks).
 - then match a sequence non-quotation characters, ```[^\"]```. The brackets indicate a group (this is a regex), the carrot indicates negation, and then we have the escaped quotation mark.
 - by putting (escaped) parens around this pattern, we indicate we want to capture it, ```\([^\"]*\)```
 - then match the closing quote, and all other characters in the line
